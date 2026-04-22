@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres-1
+      POSTGRES_PASSWORD: postgres-1
+      POSTGRES_DB: waste_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - waste_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres-1 -d waste_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8085:8085"
+    environment:
+      PORT: 8085
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres-1
+      DB_PASS: postgres-1
+      DB_NAME: waste_db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-8}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      APP_ENV: ${APP_ENV:-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  waste_postgres_data:
