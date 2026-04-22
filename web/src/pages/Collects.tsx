@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Filter, CheckSquare, XSquare, Truck, CalendarDays, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Filter, CheckSquare, XSquare, Truck as TruckIcon, CalendarDays, Pencil, Trash2 } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -220,7 +220,7 @@ export function Collects() {
           <span className="text-sm font-medium text-brand-700">{selected.size} selecionada(s)</span>
           <div className="flex gap-2 ml-auto">
             <Button size="sm" variant="secondary" icon={<CheckSquare size={14} />} onClick={bulkMarkCollected}>Marcar Coletada</Button>
-            <Button size="sm" variant="secondary" icon={<Truck size={14} />} onClick={() => setAssignRouteOpen(true)}>Atribuir Rota</Button>
+            <Button size="sm" variant="secondary" icon={<TruckIcon size={14} />} onClick={() => setAssignRouteOpen(true)}>Atribuir Rota</Button>
             <Button size="sm" variant="danger" icon={<XSquare size={14} />} onClick={bulkCancel}>Cancelar</Button>
           </div>
         </div>
