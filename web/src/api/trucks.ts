@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { Truck, PaginatedResponse } from '../types'
+import type { ImportResult, DeleteResult } from '../components/ui/CsvImportModal'
 
 export const trucksApi = {
   list: (f: { search?: string; active?: boolean; page?: number; limit?: number } = {}) => {
@@ -14,4 +15,14 @@ export const trucksApi = {
   create: (data: Partial<Truck>) => api.post<Truck>('/trucks', data),
   update: (id: string, data: Partial<Truck>) => api.patch<Truck>(`/trucks/${id}`, data),
   delete: (id: string) => api.delete<void>(`/trucks/${id}`),
+
+  import: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<ImportResult>('/trucks/import', fd)
+  },
+
+  importDelete: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<DeleteResult>('/trucks/import-delete', fd)
+  },
 }

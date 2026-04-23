@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -11,6 +11,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { generatorsApi } from '../api/generators'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import type { Generator } from '../types'
 import { fmtDate } from '../utils/formatters'
 
@@ -33,6 +36,8 @@ export function Generators() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState<Generator | null>(null)
   const [saving, setSaving] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -92,7 +97,19 @@ export function Generators() {
     <Layout
       title="Geradores"
       subtitle="Empresas geradoras de resíduos"
-      actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Novo Gerador</Button>}
+      actions={
+        <div className="flex gap-2">
+          <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+          <Button icon={<Plus size={16} />} onClick={openCreate}>Novo Gerador</Button>
+        </div>
+      }
     >
       {/* Filters */}
       <div className="bg-white rounded-2xl border border-gray-200 mb-4">
@@ -188,6 +205,22 @@ export function Generators() {
         title="Excluir Gerador"
         message={`Tem certeza que deseja excluir "${deleting?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
+      />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Geradores"
+        templateHeaders={['name', 'external_id', 'cnpj', 'address', 'zipcode', 'latitude', 'longitude']}
+        templateExample={['Empresa S/A', 'EXT001', '00.000.000/0001-00', 'Rua Exemplo 123', '01310-100', '-23.5505', '-46.6333']}
+        onImport={generatorsApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Geradores por CSV"
+        onDelete={generatorsApi.importDelete}
       />
     </Layout>
   )

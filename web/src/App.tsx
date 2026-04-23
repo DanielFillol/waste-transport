@@ -18,7 +18,9 @@ import { TruckCosts } from './pages/TruckCosts'
 import { PersonnelCosts } from './pages/PersonnelCosts'
 import { Alerts } from './pages/Alerts'
 import { AuditLogs } from './pages/AuditLogs'
+import { Users } from './pages/Users'
 import { PageLoader } from './components/ui/Spinner'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -42,7 +44,7 @@ function AppRoutes() {
 
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/geradores" element={<ProtectedRoute><Generators /></ProtectedRoute>} />
-      <Route path="/recebedores" element={<ProtectedRoute><Receivers /></ProtectedRoute>} />
+      <Route path="/receptores" element={<ProtectedRoute><Receivers /></ProtectedRoute>} />
       <Route path="/motoristas" element={<ProtectedRoute><Drivers /></ProtectedRoute>} />
       <Route path="/veiculos" element={<ProtectedRoute><Trucks /></ProtectedRoute>} />
       <Route path="/rotas" element={<ProtectedRoute><RoutesPage /></ProtectedRoute>} />
@@ -52,6 +54,7 @@ function AppRoutes() {
       <Route path="/regras-preco" element={<ProtectedRoute><PricingRules /></ProtectedRoute>} />
       <Route path="/custos-veiculos" element={<ProtectedRoute><TruckCosts /></ProtectedRoute>} />
       <Route path="/custos-pessoal" element={<ProtectedRoute><PersonnelCosts /></ProtectedRoute>} />
+      <Route path="/usuarios" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/alertas" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
       <Route path="/auditoria" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
 
@@ -65,7 +68,9 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
-          <AppRoutes />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

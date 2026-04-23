@@ -16,8 +16,9 @@ export interface User {
   id: string
   tenant_id: string
   name: string
-  email: string
+  username: string
   role: 'admin' | 'user'
+  created_at?: string
 }
 
 export interface AuthResponse {

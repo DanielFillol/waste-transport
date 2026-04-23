@@ -78,7 +78,7 @@ func buildEngine() *gin.Engine {
 	domH := handler.NewDomainHandler(domainRepo)
 	finH := handler.NewFinancialHandler(financialUseCase)
 	alrH := handler.NewAlertHandler(alertUseCase)
-	impH := handler.NewImportHandler(generatorRepo, receiverRepo, driverRepo, collectRepo)
+	impH := handler.NewImportHandler(generatorRepo, receiverRepo, driverRepo, collectRepo, truckRepo, routeRepo)
 	dashH := handler.NewDashboardHandler(dashboardUseCase)
 	audH := handler.NewAuditHandler(auditRepo)
 

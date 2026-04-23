@@ -51,7 +51,7 @@ func main() {
 	driverHandler := handler.NewDriverHandler(driverRepo, alertUseCase)
 	alertHandler := handler.NewAlertHandler(alertUseCase)
 	dashboardHandler := handler.NewDashboardHandler(dashboardUseCase)
-	importHandler := handler.NewImportHandler(generatorRepo, receiverRepo, driverRepo, collectRepo)
+	importHandler := handler.NewImportHandler(generatorRepo, receiverRepo, driverRepo, collectRepo, truckRepo, routeRepo)
 	truckHandler := handler.NewTruckHandler(truckRepo)
 	routeHandler := handler.NewRouteHandler(routeRepo, driverRepo, collectRepo)
 	collectHandler := handler.NewCollectHandler(collectRepo)

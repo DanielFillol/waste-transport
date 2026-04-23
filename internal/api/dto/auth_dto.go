@@ -3,7 +3,9 @@ package dto
 import "github.com/danielfillol/waste/internal/domain/entity"
 
 type RegisterTenantRequest struct {
-	Name string `json:"name" binding:"required,min=2"`
+	Name     string `json:"name"     binding:"required,min=2"`
+	Username string `json:"username" binding:"required,min=3"`
+	Password string `json:"password" binding:"required,min=6"`
 }
 
 type LoginRequest struct {

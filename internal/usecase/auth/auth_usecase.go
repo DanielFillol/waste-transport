@@ -24,7 +24,7 @@ func NewUseCase(tenantRepo *repository.TenantRepository, userRepo *repository.Us
 	return &UseCase{tenantRepo: tenantRepo, userRepo: userRepo, cfg: cfg}
 }
 
-func (uc *UseCase) RegisterTenant(name string) (*entity.Tenant, *entity.User, string, error) {
+func (uc *UseCase) RegisterTenant(name, username, pwd string) (*entity.Tenant, *entity.User, string, error) {
 	slug := toSlug(name)
 	if _, err := uc.tenantRepo.FindBySlug(slug); err == nil {
 		return nil, nil, "", errors.New("tenant already exists")
@@ -35,7 +35,7 @@ func (uc *UseCase) RegisterTenant(name string) (*entity.Tenant, *entity.User, st
 		return nil, nil, "", err
 	}
 
-	hashed, err := password.Hash("admin123")
+	hashed, err := password.Hash(pwd)
 	if err != nil {
 		return nil, nil, "", err
 	}
@@ -43,7 +43,7 @@ func (uc *UseCase) RegisterTenant(name string) (*entity.Tenant, *entity.User, st
 	admin := &entity.User{
 		TenantID: tenant.ID,
 		Name:     name + " Admin",
-		Username: "admin",
+		Username: username,
 		Password: hashed,
 		Role:     entity.UserRoleAdmin,
 	}

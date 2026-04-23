@@ -59,3 +59,8 @@ func (r *DriverRepository) Delete(id, tenantID uuid.UUID) error {
 func (r *DriverRepository) BulkCreate(items []entity.Driver) error {
 	return r.db.Create(&items).Error
 }
+
+func (r *DriverRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Driver{})
+	return res.RowsAffected, res.Error
+}

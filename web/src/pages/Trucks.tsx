@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -11,6 +11,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { trucksApi } from '../api/trucks'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import type { Truck } from '../types'
 
 interface FormState { plate: string; model: string; year: string; capacity_kg: string; capacity_m3: string }
@@ -29,6 +32,8 @@ export function Trucks() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState<Truck | null>(null)
   const [saving, setSaving] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -70,7 +75,19 @@ export function Trucks() {
   }
 
   return (
-    <Layout title="Veículos" subtitle="Frota de coleta" actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Novo Veículo</Button>}>
+    <Layout title="Veículos" subtitle="Frota de coleta" actions={
+      <div className="flex gap-2">
+        <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+        <Button icon={<Plus size={16} />} onClick={openCreate}>Novo Veículo</Button>
+      </div>
+    }>
       <div className="bg-white rounded-2xl border border-gray-200 mb-4">
         <div className="p-4">
           <Input placeholder="Buscar por placa ou modelo…" value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
@@ -134,6 +151,22 @@ export function Trucks() {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={handleDelete}
         title="Excluir Veículo" message={`Excluir "${deleting?.plate} – ${deleting?.model}"?`} confirmLabel="Excluir" />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Veículos"
+        templateHeaders={['plate', 'model', 'year', 'capacity_kg', 'capacity_m3']}
+        templateExample={['ABC-1234', 'Volkswagen Delivery', '2022', '5000', '20']}
+        onImport={trucksApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Veículos por CSV"
+        onDelete={trucksApi.importDelete}
+      />
     </Layout>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, AlertTriangle, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -11,6 +11,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { receiversApi } from '../api/receivers'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import type { Receiver } from '../types'
 import { fmtDate } from '../utils/formatters'
 
@@ -42,6 +45,8 @@ export function Receivers() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState<Receiver | null>(null)
   const [saving, setSaving] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -68,8 +73,8 @@ export function Receivers() {
     setSaving(true)
     try {
       const payload = { ...form, license_expiry: form.license_expiry || undefined }
-      if (editing) { await receiversApi.update(editing.id, payload); toast('Recebedor atualizado') }
-      else { await receiversApi.create(payload); toast('Recebedor criado') }
+      if (editing) { await receiversApi.update(editing.id, payload); toast('Receptor atualizado') }
+      else { await receiversApi.create(payload); toast('Receptor criado') }
       setModalOpen(false); load()
     } catch (e: unknown) { toast(e instanceof Error ? e.message : 'Erro', 'error') }
     finally { setSaving(false) }
@@ -77,7 +82,7 @@ export function Receivers() {
 
   const handleDelete = async () => {
     if (!deleting) return
-    try { await receiversApi.delete(deleting.id); toast('Recebedor excluído'); setDeleting(null); load() }
+    try { await receiversApi.delete(deleting.id); toast('Receptor excluído'); setDeleting(null); load() }
     catch (e: unknown) { toast(e instanceof Error ? e.message : 'Erro', 'error') }
   }
 
@@ -87,8 +92,20 @@ export function Receivers() {
   }
 
   return (
-    <Layout title="Recebedores" subtitle="Empresas receptoras de resíduos"
-      actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Novo Recebedor</Button>}>
+    <Layout title="Receptores" subtitle="Empresas receptoras de resíduos"
+      actions={
+        <div className="flex gap-2">
+          <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+          <Button icon={<Plus size={16} />} onClick={openCreate}>Novo Receptor</Button>
+        </div>
+      }>
       <div className="bg-white rounded-2xl border border-gray-200 mb-4">
         <div className="p-4">
           <Input placeholder="Buscar por nome ou CNPJ…" value={search}
@@ -96,8 +113,8 @@ export function Receivers() {
             leftIcon={<Search size={15} />} className="max-w-sm" />
         </div>
         {loading ? <PageLoader /> : items.length === 0 ? (
-          <EmptyState title="Nenhum recebedor" description="Crie o primeiro recebedor para começar."
-            action={<Button onClick={openCreate}>Criar Recebedor</Button>} />
+          <EmptyState title="Nenhum receptor" description="Crie o primeiro receptor para começar."
+            action={<Button onClick={openCreate}>Criar Receptor</Button>} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -151,10 +168,10 @@ export function Receivers() {
       </div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}
-        title={editing ? 'Editar Recebedor' : 'Novo Recebedor'}
+        title={editing ? 'Editar Receptor' : 'Novo Receptor'}
         footer={<><Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button><Button onClick={handleSave} loading={saving}>Salvar</Button></>}>
         <div className="space-y-4">
-          <Input label="Nome" required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Empresa Recebedora S/A" />
+          <Input label="Nome" required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Empresa Receptora S/A" />
           <div className="grid grid-cols-2 gap-4">
             <Input label="CNPJ" value={form.cnpj} onChange={e => setForm(p => ({ ...p, cnpj: e.target.value }))} placeholder="00.000.000/0001-00" />
             <Input label="ID Externo" value={form.external_id} onChange={e => setForm(p => ({ ...p, external_id: e.target.value }))} placeholder="Código legado" />
@@ -168,8 +185,24 @@ export function Receivers() {
       </Modal>
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={handleDelete}
-        title="Excluir Recebedor" message={`Tem certeza que deseja excluir "${deleting?.name}"? Esta ação não pode ser desfeita.`}
+        title="Excluir Receptor" message={`Tem certeza que deseja excluir "${deleting?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir" />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Receptores"
+        templateHeaders={['name', 'external_id', 'cnpj', 'address', 'license_number', 'license_expiry']}
+        templateExample={['Receptor S/A', 'EXT001', '00.000.000/0001-00', 'Rua Exemplo 123', 'LIC-001', '2026-12-31']}
+        onImport={receiversApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Receptores por CSV"
+        onDelete={receiversApi.importDelete}
+      />
     </Layout>
   )
 }

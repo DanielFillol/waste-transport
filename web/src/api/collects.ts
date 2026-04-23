@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { Collect, CollectStatus, PaginatedResponse } from '../types'
+import type { ImportResult, DeleteResult } from '../components/ui/CsvImportModal'
 
 export interface CollectFilters {
   generator_id?: string
@@ -47,4 +48,14 @@ export const collectsApi = {
     api.post('/collects/bulk-cancel', { ids }),
   bulkAssignRoute: (ids: string[], route_id: string) =>
     api.post('/collects/bulk-assign-route', { ids, route_id }),
+
+  import: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<ImportResult>('/collects/import', fd)
+  },
+
+  importDelete: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<DeleteResult>('/collects/import-delete', fd)
+  },
 }

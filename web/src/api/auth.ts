@@ -1,14 +1,14 @@
 import { api } from './client'
-import type { AuthResponse, User } from '../types'
+import type { Tenant, User } from '../types'
 
 export const authApi = {
-  register: (name: string) =>
-    api.post<AuthResponse>('/auth/tenants', { name }),
+  register: (name: string, username: string, password: string) =>
+    api.post<{ token: string; user: User; tenant: Tenant }>('/auth/tenants', { name, username, password }),
 
-  login: (email: string, password: string) =>
-    api.post<AuthResponse>('/auth/login', { email, password }),
+  login: (slug: string, username: string, password: string) =>
+    api.post<{ token: string; user: User }>('/auth/login', { slug, username, password }),
 
   me: () => api.get<User>('/me'),
 
-  refresh: () => api.post<AuthResponse>('/auth/refresh'),
+  refresh: () => api.post<{ token: string; user: User }>('/auth/refresh'),
 }

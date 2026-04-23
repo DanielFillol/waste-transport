@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { Route, PaginatedResponse } from '../types'
+import type { ImportResult, DeleteResult } from '../components/ui/CsvImportModal'
 
 export const routesApi = {
   list: (f: { search?: string; page?: number; limit?: number } = {}) => {
@@ -34,4 +35,14 @@ export const routesApi = {
     generator_ids: string[]
     receiver_id: string
   }) => api.post<{ created: number }>(`/routes/${id}/generate-collects`, data),
+
+  import: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<ImportResult>('/routes/import', fd)
+  },
+
+  importDelete: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<DeleteResult>('/routes/import-delete', fd)
+  },
 }

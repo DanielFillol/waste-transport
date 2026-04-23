@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Filter, CheckSquare, XSquare, Truck as TruckIcon, CalendarDays, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Filter, CheckSquare, XSquare, Truck as TruckIcon, CalendarDays, Pencil, Trash2, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -12,6 +12,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { collectsApi, type CollectFilters } from '../api/collects'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import { generatorsApi } from '../api/generators'
 import { receiversApi } from '../api/receivers'
 import { trucksApi } from '../api/trucks'
@@ -76,6 +79,8 @@ export function Collects() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState<Collect | null>(null)
   const [saving, setSaving] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
 
   // Assign route modal
   const [assignRouteOpen, setAssignRouteOpen] = useState(false)
@@ -193,7 +198,19 @@ export function Collects() {
 
   return (
     <Layout title="Coletas" subtitle="Gerenciamento de coletas"
-      actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Nova Coleta</Button>}>
+      actions={
+        <div className="flex gap-2">
+          <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+          <Button icon={<Plus size={16} />} onClick={openCreate}>Nova Coleta</Button>
+        </div>
+      }>
 
       {/* Filters */}
       <div className="bg-white rounded-2xl border border-gray-200 mb-4 p-4">
@@ -339,6 +356,22 @@ export function Collects() {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={handleDelete}
         title="Excluir Coleta" message="Tem certeza que deseja excluir esta coleta?" confirmLabel="Excluir" />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Coletas"
+        templateHeaders={['generator_id', 'receiver_id', 'planned_date', 'external_id', 'collect_type', 'route_id']}
+        templateExample={['uuid-do-gerador', 'uuid-do-receptor', '2026-05-01', 'EXT001', 'normal', '']}
+        onImport={collectsApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Coletas por CSV"
+        onDelete={collectsApi.importDelete}
+      />
     </Layout>
   )
 }

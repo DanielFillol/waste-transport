@@ -26,7 +26,7 @@ func (h *AuthHandler) RegisterTenant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tenant, user, token, err := h.uc.RegisterTenant(req.Name)
+	tenant, user, token, err := h.uc.RegisterTenant(req.Name, req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return

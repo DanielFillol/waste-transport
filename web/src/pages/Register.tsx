@@ -1,25 +1,32 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Recycle, Building2 } from 'lucide-react'
+import { Recycle, Building2, User, Lock, Info } from 'lucide-react'
 import { authApi } from '../api/auth'
-import { setToken } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 
 export function Register() {
+  const { authenticate } = useAuth()
   const navigate = useNavigate()
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [createdSlug, setCreatedSlug] = useState('')
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+    if (password !== confirm) { setError('As senhas não conferem'); return }
     setLoading(true)
     try {
-      const res = await authApi.register(name)
-      setToken(res.token)
-      navigate('/login')
+      const res = await authApi.register(name, username, password)
+      setCreatedSlug(res.tenant?.slug ?? '')
+      authenticate(res.token, res.user!)
+      setTimeout(() => navigate('/'), 2500)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta')
     } finally {
@@ -42,6 +49,16 @@ export function Register() {
           Crie o tenant da sua empresa para começar.
         </p>
 
+        {createdSlug && (
+          <div className="mb-4 p-3 bg-brand-50 border border-brand-200 rounded-lg flex gap-2 text-sm text-brand-700">
+            <Info size={16} className="shrink-0 mt-0.5" />
+            <span>
+              Conta criada! Seu ID de acesso é <strong>{createdSlug}</strong>. Guarde-o para fazer login.
+              Redirecionando…
+            </span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Nome da empresa"
@@ -51,12 +68,38 @@ export function Register() {
             required
             leftIcon={<Building2 size={15} />}
           />
+          <Input
+            label="Usuário admin"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            placeholder="admin"
+            required
+            leftIcon={<User size={15} />}
+          />
+          <Input
+            label="Senha"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Mínimo 6 caracteres"
+            required
+            leftIcon={<Lock size={15} />}
+          />
+          <Input
+            label="Confirmar senha"
+            type="password"
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            placeholder="••••••••"
+            required
+            leftIcon={<Lock size={15} />}
+          />
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
               {error}
             </div>
           )}
-          <Button type="submit" loading={loading} className="w-full" size="lg">
+          <Button type="submit" loading={loading} className="w-full" size="lg" disabled={!!createdSlug}>
             Criar conta
           </Button>
         </form>

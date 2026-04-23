@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { Driver, PaginatedResponse } from '../types'
+import type { ImportResult, DeleteResult } from '../components/ui/CsvImportModal'
 
 export const driversApi = {
   list: (f: { search?: string; active?: boolean; page?: number; limit?: number } = {}) => {
@@ -14,4 +15,14 @@ export const driversApi = {
   create: (data: Partial<Driver>) => api.post<Driver>('/drivers', data),
   update: (id: string, data: Partial<Driver>) => api.patch<Driver>(`/drivers/${id}`, data),
   delete: (id: string) => api.delete<void>(`/drivers/${id}`),
+
+  import: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<ImportResult>('/drivers/import', fd)
+  },
+
+  importDelete: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<DeleteResult>('/drivers/import-delete', fd)
+  },
 }

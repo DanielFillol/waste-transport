@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Recycle, Mail, Lock } from 'lucide-react'
+import { Recycle, Building2, User, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
@@ -8,7 +8,8 @@ import { Button } from '../components/ui/Button'
 export function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [slug, setSlug] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,7 +19,7 @@ export function Login() {
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      await login(slug, username, password)
       navigate('/')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Credenciais inválidas')
@@ -42,7 +43,7 @@ export function Login() {
             Gestão inteligente<br />de resíduos
           </h2>
           <p className="text-slate-400 text-lg">
-            Controle coletas, geradores, recebedores e toda a cadeia de resíduos em um só lugar.
+            Controle coletas, geradores, receptores e toda a cadeia de resíduos em um só lugar.
           </p>
         </div>
         <div className="flex gap-8 text-slate-500 text-sm">
@@ -67,13 +68,20 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="seu@email.com"
+              label="ID da empresa"
+              value={slug}
+              onChange={e => setSlug(e.target.value)}
+              placeholder="minha-empresa"
               required
-              leftIcon={<Mail size={15} />}
+              leftIcon={<Building2 size={15} />}
+            />
+            <Input
+              label="Usuário"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="seu.usuario"
+              required
+              leftIcon={<User size={15} />}
             />
             <Input
               label="Senha"

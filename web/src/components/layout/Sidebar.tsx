@@ -34,7 +34,7 @@ const sections: NavSection[] = [
     title: 'Cadastros',
     items: [
       { label: 'Geradores', to: '/geradores', icon: <Building2 size={18} /> },
-      { label: 'Recebedores', to: '/recebedores', icon: <Building2 size={18} /> },
+      { label: 'Receptores', to: '/receptores', icon: <Building2 size={18} /> },
       { label: 'Motoristas', to: '/motoristas', icon: <Users size={18} /> },
       { label: 'Veículos', to: '/veiculos', icon: <Car size={18} /> },
     ],
@@ -52,6 +52,7 @@ const sections: NavSection[] = [
   {
     title: 'Sistema',
     items: [
+      { label: 'Usuários', to: '/usuarios', icon: <UserCog size={18} /> },
       { label: 'Alertas', to: '/alertas', icon: <Bell size={18} /> },
       { label: 'Auditoria', to: '/auditoria', icon: <History size={18} /> },
     ],

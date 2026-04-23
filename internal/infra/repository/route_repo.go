@@ -56,6 +56,15 @@ func (r *RouteRepository) Delete(id, tenantID uuid.UUID) error {
 	return r.db.Where("id = ? AND tenant_id = ?", id, tenantID).Delete(&entity.Route{}).Error
 }
 
+func (r *RouteRepository) BulkCreate(items []entity.Route) error {
+	return r.db.CreateInBatches(items, 100).Error
+}
+
+func (r *RouteRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Route{})
+	return res.RowsAffected, res.Error
+}
+
 func (r *RouteRepository) SetDrivers(routeID uuid.UUID, drivers []*entity.Driver) error {
 	var route entity.Route
 	if err := r.db.First(&route, "id = ?", routeID).Error; err != nil {

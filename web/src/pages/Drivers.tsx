@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, AlertTriangle, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -11,6 +11,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { driversApi } from '../api/drivers'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import type { Driver } from '../types'
 import { fmtDate } from '../utils/formatters'
 
@@ -42,6 +45,8 @@ export function Drivers() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState<Driver | null>(null)
   const [saving, setSaving] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -87,7 +92,19 @@ export function Drivers() {
   }
 
   return (
-    <Layout title="Motoristas" subtitle="Cadastro de motoristas" actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Novo Motorista</Button>}>
+    <Layout title="Motoristas" subtitle="Cadastro de motoristas" actions={
+      <div className="flex gap-2">
+        <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+        <Button icon={<Plus size={16} />} onClick={openCreate}>Novo Motorista</Button>
+      </div>
+    }>
       <div className="bg-white rounded-2xl border border-gray-200 mb-4">
         <div className="p-4">
           <Input placeholder="Buscar por nome ou CPF…" value={search}
@@ -164,6 +181,22 @@ export function Drivers() {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={handleDelete}
         title="Excluir Motorista" message={`Excluir "${deleting?.name}"?`} confirmLabel="Excluir" />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Motoristas"
+        templateHeaders={['name', 'external_id', 'email', 'phone', 'cpf', 'cnh_number', 'cnh_category', 'cnh_expiry_date']}
+        templateExample={['João Silva', 'EXT001', 'joao@empresa.com', '11999990000', '000.000.000-00', '00000000000', 'AB', '2027-12-31']}
+        onImport={driversApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Motoristas por CSV"
+        onDelete={driversApi.importDelete}
+      />
     </Layout>
   )
 }

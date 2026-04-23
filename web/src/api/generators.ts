@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { Generator, PaginatedResponse } from '../types'
+import type { ImportResult, DeleteResult } from '../components/ui/CsvImportModal'
 
 export interface GeneratorFilters {
   search?: string
@@ -28,4 +29,14 @@ export const generatorsApi = {
     api.patch<Generator>(`/generators/${id}`, data),
 
   delete: (id: string) => api.delete<void>(`/generators/${id}`),
+
+  import: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<ImportResult>('/generators/import', fd)
+  },
+
+  importDelete: (file: File) => {
+    const fd = new FormData(); fd.append('file', file)
+    return api.postForm<DeleteResult>('/generators/import-delete', fd)
+  },
 }

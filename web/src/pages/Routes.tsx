@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Pencil, Trash2, CalendarPlus } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, CalendarPlus, FileUp, Trash } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -11,6 +11,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { routesApi } from '../api/routes'
+import { CsvImportModal } from '../components/ui/CsvImportModal'
+import { CsvDeleteModal } from '../components/ui/CsvDeleteModal'
+import { DropdownButton } from '../components/ui/DropdownButton'
 import { driversApi } from '../api/drivers'
 import { generatorsApi } from '../api/generators'
 import { receiversApi } from '../api/receivers'
@@ -58,6 +61,8 @@ export function Routes() {
   const [genRoute, setGenRoute] = useState<Route | null>(null)
   const [genForm, setGenForm] = useState<GenerateForm>({ target_date: '', generator_ids: [], receiver_id: '' })
   const [generating, setGenerating] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [deleteImportOpen, setDeleteImportOpen] = useState(false)
   const [generators, setGenerators] = useState<Generator[]>([])
   const [receivers, setReceivers] = useState<Receiver[]>([])
 
@@ -145,7 +150,19 @@ export function Routes() {
 
   return (
     <Layout title="Rotas" subtitle="Roteiros de coleta"
-      actions={<Button icon={<Plus size={16} />} onClick={openCreate}>Nova Rota</Button>}>
+      actions={
+        <div className="flex gap-2">
+          <DropdownButton
+            label="Importar CSV"
+            icon={<FileUp size={16} />}
+            options={[
+              { label: 'Criar / Atualizar', icon: <FileUp size={14} />, onClick: () => setImportOpen(true) },
+              { label: 'Excluir por CSV', icon: <Trash size={14} />, onClick: () => setDeleteImportOpen(true), variant: 'danger' },
+            ]}
+          />
+          <Button icon={<Plus size={16} />} onClick={openCreate}>Nova Rota</Button>
+        </div>
+      }>
       <div className="bg-white rounded-2xl border border-gray-200 mb-4">
         <div className="p-4">
           <Input placeholder="Buscar rota…" value={search}
@@ -262,6 +279,22 @@ export function Routes() {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={handleDelete}
         title="Excluir Rota" message={`Excluir rota "${deleting?.name}"?`} confirmLabel="Excluir" />
+
+      <CsvImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar Rotas"
+        templateHeaders={['name', 'week_day', 'week_number']}
+        templateExample={['Rota Norte', '1', '2']}
+        onImport={routesApi.import}
+      />
+
+      <CsvDeleteModal
+        open={deleteImportOpen}
+        onClose={() => setDeleteImportOpen(false)}
+        title="Excluir Rotas por CSV"
+        onDelete={routesApi.importDelete}
+      />
     </Layout>
   )
 }

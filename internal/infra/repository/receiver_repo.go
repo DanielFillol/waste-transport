@@ -59,3 +59,8 @@ func (r *ReceiverRepository) Delete(id, tenantID uuid.UUID) error {
 func (r *ReceiverRepository) BulkCreate(items []entity.Receiver) error {
 	return r.db.CreateInBatches(items, 100).Error
 }
+
+func (r *ReceiverRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Receiver{})
+	return res.RowsAffected, res.Error
+}

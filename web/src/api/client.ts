@@ -12,12 +12,11 @@ export function clearToken() {
   localStorage.removeItem('token')
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, isForm = false): Promise<T> {
   const token = getToken()
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  }
+  const headers: Record<string, string> = isForm
+    ? {}
+    : { 'Content-Type': 'application/json', ...(options.headers as Record<string, string>) }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
@@ -46,4 +45,6 @@ export const api = {
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  postForm: <T>(path: string, formData: FormData) =>
+    request<T>(path, { method: 'POST', body: formData }, true),
 }

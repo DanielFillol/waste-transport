@@ -59,3 +59,8 @@ func (r *GeneratorRepository) Delete(id, tenantID uuid.UUID) error {
 func (r *GeneratorRepository) BulkCreate(items []entity.Generator) error {
 	return r.db.CreateInBatches(items, 100).Error
 }
+
+func (r *GeneratorRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Generator{})
+	return res.RowsAffected, res.Error
+}

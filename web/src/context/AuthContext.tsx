@@ -7,7 +7,8 @@ import type { User } from '../types'
 interface AuthContextValue {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (slug: string, username: string, password: string) => Promise<void>
+  authenticate: (token: string, user: User) => void
   logout: () => void
 }
 
@@ -32,11 +33,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { loadUser() }, [loadUser])
 
-  const login = async (email: string, password: string) => {
-    const res = await authApi.login(email, password)
+  const login = async (slug: string, username: string, password: string) => {
+    const res = await authApi.login(slug, username, password)
     setToken(res.token)
-    const me = await authApi.me()
-    setUser(me)
+    setUser(res.user)
+  }
+
+  const authenticate = (token: string, user: User) => {
+    setToken(token)
+    setUser(user)
   }
 
   const logout = () => {
@@ -45,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, authenticate, logout }}>
       {children}
     </AuthContext.Provider>
   )

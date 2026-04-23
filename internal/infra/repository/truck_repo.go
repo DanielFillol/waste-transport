@@ -55,3 +55,12 @@ func (r *TruckRepository) Update(t *entity.Truck) error {
 func (r *TruckRepository) Delete(id, tenantID uuid.UUID) error {
 	return r.db.Where("id = ? AND tenant_id = ?", id, tenantID).Delete(&entity.Truck{}).Error
 }
+
+func (r *TruckRepository) BulkCreate(items []entity.Truck) error {
+	return r.db.CreateInBatches(items, 100).Error
+}
+
+func (r *TruckRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Truck{})
+	return res.RowsAffected, res.Error
+}

@@ -118,6 +118,11 @@ func (r *CollectRepository) BulkCreate(items []entity.Collect) error {
 	return r.db.CreateInBatches(items, 100).Error
 }
 
+func (r *CollectRepository) BulkDelete(ids []uuid.UUID, tenantID uuid.UUID) (int64, error) {
+	res := r.db.Where("id IN ? AND tenant_id = ?", ids, tenantID).Delete(&entity.Collect{})
+	return res.RowsAffected, res.Error
+}
+
 func (r *CollectRepository) CountByStatus(tenantID uuid.UUID) (map[entity.CollectStatus]int64, error) {
 	type row struct {
 		Status entity.CollectStatus
